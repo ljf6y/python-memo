@@ -14,7 +14,6 @@ private_check	個別チェック	"private_check": "xxx_check"
 
 
 
-
 rules = {
 
 #項目名：年月 → 必須、基準年月チェック、年月チェック
@@ -31,16 +30,16 @@ rules = {
     "type": "alphanumeric"
 },
 
-#項目名：セグメントコード → 最大桁数3桁、英数字
+#項目名：セグメントコード → 最大桁数3桁、英字
 2 : {
     "max_len": 3,
-    "type": "alphanumeric"
+    "type": "alphabet"
 },
 
 #項目名：法人番号 → 最大桁数6桁、数字、DB存在チェック
 3 : {
     "max_len": 6,
-    "type": "number",
+    "type": "numeric",
     "db_check": "hojin_number"
 },
 
@@ -59,9 +58,11 @@ rules = {
     "common_check": "number_10_2"
 },
 
-#項目名：個別ロジック対象 → 個別チェック
+#項目名：個別チェック
 7 : {
     "private_check": "custom_validation"
 }
 
 }
+
+
