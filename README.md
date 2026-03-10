@@ -1,19 +1,13 @@
-個別チェック
-収益種類設定内容チェック
-1. 対象項目
+■チェックルール定義
 
-収益種類
+引数 rules に設定可能なチェックルールは以下の通りとする。
 
-2. チェック内容
-
-「収益種類」の値が 収益種類定義一覧に存在すること を確認する。
-
-存在しない場合、エラーとする。
-
-3. エラー処理
-
-以下のメッセージを返却する。
-
-456ERR4088
-「収益種類」が正しくありません。
-定義されていない「収益種類」が設定されています。
+ルール名	説明	設定例
+is_required	必須チェック	"is_required": True
+max_len	最大桁数チェック	"max_len": 6
+type	文字種チェック	"type": "alphanumeric"
+common_check	共通チェック	"common_check": "yyyymmdd"
+list_check	リスト範囲チェック	"list_check": ["A","B"]
+db_check	DB存在チェック	"db_check": "hojin_number"
+kijunym_check	基準年月チェック	"kijunym_check": "kijundate"
+private_check	個別チェック	"private_check": "xxx_check"
