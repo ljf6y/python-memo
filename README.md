@@ -1,20 +1,20 @@
 # 不動産粗利
 
 import pandas as pd
-import common.checks as checks
+import checks as checks
 import message_util
 
 from snowflake.snowpark.context import get_active_session
-from sql_reader import sql_reader
-from sql_runner import sql_runner
+from sql_reader import SqlReader  
+from sql_runner import SqlRunner
 
 
 # Snowpark セッション取得
 session = get_active_session()
 
 # SQLファイル読込
-reader = sql_reader("pages/sc_5_01_05_0.sql")
-runner = sql_runner(session, reader)
+reader = SqlReader("pages/sc_5_01_05_0.sql")
+runner = SqlRunner(session, reader)
 
 
 # 定数定義
@@ -22,7 +22,7 @@ const_fmt004_total_col = 7
 
 
 # 不動産粗利の収益種類
-fudosan_shueki_type = {
+fudosan_shueki_type = [
     "証券化信託",
     "土地信託",
     "管理信託",
@@ -31,29 +31,18 @@ fudosan_shueki_type = {
     "仲介",
     "鑑定",
     "コンサル"
-}
+]
 
 
 # ==================================================
 # ファイル選択後イベント
 # ==================================================
 def fmt_check(upload_df: pd.DataFrame, ym: str) -> tuple[list, pd.DataFrame]:
-    """
-    不動産粗利（汎用）_ファイル選択後イベント
 
-    upload_df(pandas.DataFrame): アップロード情報
-    ym(str): 基準年月（例：202603）
-
-    Returns:
-        list: エラーメッセージリスト
-        pandas.DataFrame: 編集後アップロード情報
-    """
-
-    # 空きのエラーメッセージリスト、編集後アップロード情報を作成する
     err_msg_list = []
     upload_df_after = upload_df
 
-    # アップロード情報の項目数チェック
+    # 項目数チェック
     if len(upload_df_after.columns) != const_fmt004_total_col:
 
         err_msg_list.append(
@@ -64,7 +53,7 @@ def fmt_check(upload_df: pd.DataFrame, ym: str) -> tuple[list, pd.DataFrame]:
 
     else:
 
-        # データクレンジング処理
+        # データクレンジング
         upload_df_after = clean_data(upload_df_after)
 
         # チェックルール設定
@@ -74,13 +63,13 @@ def fmt_check(upload_df: pd.DataFrame, ym: str) -> tuple[list, pd.DataFrame]:
             0: {"is_required": True, "common_check": "yyyymm"},
 
             # 法人番号
-            1: {"max_len": 6, "type": "number", "db_check": "hojin_number"},
+            1: {"max_len": 6, "type": "numeric", "db_check": "hojin_number"}, 
 
             # 取引先名
             2: {"max_len": 100},
 
-            # 収益種類
-            3: {"is_required": True, "max_len": 50, "list_check": fudosan_shueki_type},
+            # 収益種類（共通チェックではなく個別チェック）
+            3: {"is_required": True, "max_len": 50},
 
             # 収益種類補足
             4: {"max_len": 100},
@@ -92,13 +81,25 @@ def fmt_check(upload_df: pd.DataFrame, ym: str) -> tuple[list, pd.DataFrame]:
             6: {"max_len": 100},
         }
 
-        # 共通チェック部品（DFチェック）呼び出し
+        # 共通チェック
         err_msg_list = checks.validate_dataframe(
             upload_df_after,
             list(validation_rules.items())
         )
 
-        # 処理終了
+
+        for idx, value in enumerate(upload_df_after.iloc[:, 3], start=1):
+
+            if pd.notna(value) and value != "":
+
+                if value not in fudosan_shueki_type:
+
+                    err_msg_list.append(
+                        message_util.get_messages_data(
+                            "456ERR4088", "収益種類"
+                        )
+                    )
+
         return err_msg_list, upload_df_after
 
 
@@ -106,14 +107,6 @@ def fmt_check(upload_df: pd.DataFrame, ym: str) -> tuple[list, pd.DataFrame]:
 # データクレンジング
 # ==================================================
 def clean_data(upload_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    データクレンジング処理
-
-    upload_df(pandas.DataFrame): アップロード情報
-
-    Returns:
-        pandas.DataFrame: 編集後アップロード情報
-    """
 
     trim_cols = [
         "年月",
@@ -125,9 +118,11 @@ def clean_data(upload_df: pd.DataFrame) -> pd.DataFrame:
         "備考"
     ]
 
-    # 前後空白削除
+    # 前後空白削除（半角＋全角）
     upload_df[trim_cols] = upload_df[trim_cols].apply(
-        lambda x: x.str.strip()
+        lambda col: col.apply(
+            lambda v: v.replace("　", "").strip() if isinstance(v, str) else v
+        )
     )
 
     return upload_df
@@ -142,17 +137,6 @@ def insert_to_work_table(
     ym: str,
     torikomi_id: str
 ) -> bool:
-    """
-    不動産粗利（汎用）_実行ボタン押下イベント
-
-    upload_df(pandas.DataFrame): アップロード情報
-    uchiwake_code(str): 内訳コード
-    ym(str): 基準年月
-    torikomi_id(str): 取込ID
-
-    Returns:
-        bool: データ登録結果
-    """
 
     # 既存データ件数取得
     result_list = runner.query(
@@ -163,8 +147,7 @@ def insert_to_work_table(
         }
     )
 
-    # 既存データが存在する場合削除
-    if len(result_list) == 1 and result_list[0] > 0:
+    if len(result_list) == 1 and result_list[0]["DATA_COUNT"] > 0:
 
         runner.execute(
             "del_t456uwoa040",
@@ -187,10 +170,10 @@ def insert_to_work_table(
 
     upload_df = upload_df.rename(columns=column_map)
 
-    # 空文字をNoneに変換
+    # 空文字 → None
     upload_df = upload_df.replace("", None)
 
-    # 内訳コード追加
+    # 内訳コード
     upload_df["UCHIWAKE_CD"] = uchiwake_code
 
     # ファイル内連番
