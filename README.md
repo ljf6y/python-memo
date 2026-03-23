@@ -1,15 +1,12 @@
-def hojin_number_db_check(hojin_no: str, kijun_ym: str, session) -> bool:
+# ★★★【修正：DBチェック呼び出し】★★★
+if db_check is not None:
+    if db_check == "hojin_number":
 
-    sql = f"""
-    SELECT COUNT(*) AS cnt
-    FROM T456SMMMD010
-    WHERE HOJIN_NO = '{hojin_no}'
-      AND KIJUN_YM = '{kijun_ym}'
-    """
+        kijun_ym = row["年月"]   # ← 这里你前面已经确认列名了
 
-    try:
-        df = session.sql(sql).to_pandas()
-        count = df.iloc[0]["cnt"]
-        return count >= 1
-    except Exception:
-        return False
+        result = hojin_number_db_check(val_str, kijun_ym, session)
+
+        if result == False:
+            param = f"{col_name}:{val_str}"
+            msg = message_util.get_messages_data("456ERR0002", param)
+            err_msg_list.append(f"レコード {idx+1}: {msg}")
