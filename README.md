@@ -1,5 +1,11 @@
-法人番号存在チェックについて、
-設計書に基づきDBチェック処理を実装し、
-validate処理から正常に呼び出されるよう修正いたしました。
+insert_count = runner.vectorized_insert(
+    upload_df,
+    schema="UPLOAD",
+    table_name="T456UWA0040",
+    overwrite=False
+)
 
-ご確認お願いいたします。
+if insert_count != len(upload_df):
+    return False
+else:
+    return True
