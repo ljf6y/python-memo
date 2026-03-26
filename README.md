@@ -104,3 +104,13 @@ No.7
 	2.	第一张证据的 No 栏要写 1
 	3.	No.20、No.24 的边界值写错了，要改成更合适的年月边界值
 	4.	证据没写清楚处理前/处理后，导致他看不懂，等于没法 review
+
+
+
+import streamlit as st
+
+@st.cache_data
+def load_data():
+    return session.sql("SELECT * FROM table").collect()
+
+
