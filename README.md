@@ -1,33 +1,21 @@
+const_fmt005_total_col = 9
 
-固定値チェック
-
-ご指摘ありがとうございます。
-該当箇所について修正を行い、現在は正しく表示されることを確認しております。
-お手数ですが、ご確認のほどよろしくお願いいたします。
-
-
-ご指摘ありがとうございます。
-修正し、現在は表示されるようになっております。
-ご確認お願いいたします。
+const_total_col
 
 
 
+exp_col_list = dict(list(column_map.items())[:const_total_col])
 
-ご指摘ありがとうございます。
-関数名については小文字で統一するルールとしており、
-
-
-本件も当該ルールに従っております。
-
-
+if len(upload_df_after.columns) != const_total_col:
+    err_msg_list.append(
+        message_util.get_messages_data("456ERR4041", const_total_col)
+    )
 
 
+# 外部
+import streamlit as st
+import pandas as pd
 
-については認識しており、内部で確認のうえ対応しております。
-
-
-
-
-
-
-
+# 内部
+import checks
+import message_util
