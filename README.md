@@ -1,2 +1,9 @@
 
-赤枠の箇所は「UCHIWAKE」が表示されるべきですが、現在は「EOM_TENSHO_CHUSEN_GAKU」の位置になっていますので、修正をお願いします。
+赤枠の箇所は「UCHIWAKE」が表示されるべきですが、現在は「EOM_TENSHO_CHUSEN_GAKU」が表示されていますので、修正をお願いします。
+
+
+
+
+
+
+M_TENSHO_CHUSEN_GAKU」の位置になっていますので、修正をお願いします。
