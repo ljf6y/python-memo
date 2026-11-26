@@ -1,19 +1,12 @@
-
-収益種類の設定内容以外の値、および空値の場合の動作を確認する
-
-
-
-
-
-
-
-
-
-
-
-
-外部設計書に記載されている収益種類の設定内容を確認する。
-
-
-
-が元のモジュール名と同じであり、冗長な記述であったため。
+SELECT
+    '1'
+    || HOJIN_NO
+    || TSUKA_CD
+    || SHOHIN_SHUBETSU_CD
+    || LPAD(TO_VARCHAR(ZD::NUMBER(15,0)), 15, '0')
+    || LPAD(TO_VARCHAR(LMT_GAKU::NUMBER(15,0)), 15, '0')
+    || REPEAT(' ', 7) AS COMPARE_DATA
+FROM MAIN_K.UPLOAD.T456UWOA190
+WHERE FILE_KIJUN_YMD = '20260531'
+  AND TORIKOMI_ID = '20261126001'
+ORDER BY TO_NUMBER(FILENAI_RENBAN);
