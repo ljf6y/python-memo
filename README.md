@@ -1,12 +1,5 @@
-SELECT
-    '1'
-    || HOJIN_NO
-    || TSUKA_CD
-    || SHOHIN_SHUBETSU_CD
-    || LPAD(TO_VARCHAR(ZD::NUMBER(15,0)), 15, '0')
-    || LPAD(TO_VARCHAR(LMT_GAKU::NUMBER(15,0)), 15, '0')
-    || REPEAT(' ', 7) AS COMPARE_DATA
-FROM MAIN_K.UPLOAD.T456UWOA190
-WHERE FILE_KIJUN_YMD = '20260531'
-  AND TORIKOMI_ID = '20261126001'
-ORDER BY TO_NUMBER(FILENAI_RENBAN);
+お客様のデータと比較するため、DBのデータを固定長ファイルの形式に合わせる。
+
+残高と極度額は、小数点以下がすべて0であることを確認してから削除する。
+
+各項目の連結、ゼロ埋め、空白の追加を行い、ファイル内連番順に並べて比較する。
